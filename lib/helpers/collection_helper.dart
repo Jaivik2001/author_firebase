@@ -1,15 +1,24 @@
-import 'package:author_firebase/global.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart';
 
-class CollectionHelper {
-  static CollectionHelper instence = CollectionHelper();
-  CollectionReference register = FirebaseFirestore.instance.collection('register');
+import '../component/ModelClass.dart';
+class Helper {
+  static Helper instance = Helper();
+  CollectionReference author = FirebaseFirestore.instance.collection('Authors');
 
-
-  insert() async {
-    return register.add({
-      "author": Global.author,
-      "book": Global.book
-    });
+  insertData(AuthorModel authorModel) async {
+    return author
+        .add(authorModel.toMap())
+        .then((value) => print("Note Added.."))
+        .catchError((error) => print("Failed to add Note: $error"));
+  }
+  deleteData({required int index}) async {
+    var docSnap = await author.get();
+    var doc_id = docSnap.docs;
+    return author
+        .doc(doc_id[index].id)
+        .delete()
+        .then((value) => print("note Deleted.."))
+        .catchError((error) => print("Failed to delete note: $error"));
   }
 }

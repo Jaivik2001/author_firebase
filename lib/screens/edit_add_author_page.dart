@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:author_firebase/component/ModelClass.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
@@ -8,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../global.dart';
 import '../helpers/cloud_firestore_helper.dart';
+import '../helpers/collection_helper.dart';
 
 class EditAddAuthorPage extends StatefulWidget {
   const EditAddAuthorPage({Key? key}) : super(key: key);
@@ -38,60 +40,23 @@ class _EditAddAuthorPageState extends State<EditAddAuthorPage> {
 
   @override
   Widget build(context) {
-    QueryDocumentSnapshot? res;
-    if (Global.isUpdate) {
-      res = ModalRoute.of(context)!.settings.arguments as QueryDocumentSnapshot;
 
-      authorController.text = "${res["author"]}";
-      bookController.text = "${res["book"]}";
-
-      isNew == false ? image = base64Decode(res["image"]) : null;
-    }
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
         actions: [
           TextButton(
-            onPressed: () async {
-              if (image != null) {
-                if (formKey.currentState!.validate()) {
-                  formKey.currentState!.save();
-                  imageString = base64Encode(image!);
-
-                  Map<String, dynamic> data = {
-                    "author": author,
-                    "book": book,
-                    "image": imageString
-                  };
-
-                  if (Global.isUpdate) {
-                    CloudFirestoreHelper.cloudFirestoreHelper
-                        .updateRecords(data: data, id: res!.id);
-                  } else {
-                    CloudFirestoreHelper.cloudFirestoreHelper
-                        .insertData(data: data);
-                  }
-                  Navigator.of(context).pop();
-                }
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    behavior: SnackBarBehavior.floating,
-                    backgroundColor: Colors.red,
-                    content: Text(
-                      "Add image First..",
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                );
-              }
-            },
+            onPressed: ()  {
+              var authors = AuthorModel(
+                  author: authorController.text, book: bookController.text);
+              Helper.instance.insertData(authors);
+              authorController.clear();
+              bookController.clear();
+              Navigator.of(context).pop();
+              },
             child: Text(
-              (Global.isUpdate) ? "SAVE" : "ADD",
+              "ADD",
               style: GoogleFonts.poppins(
                 color: Colors.white.withOpacity(0.9),
                 fontSize: 17,
